@@ -1,9 +1,12 @@
-import { Router, Request, Response } from "express";
+import { Router, Response } from "express";
 import { User } from "../models/user";
+import { authMiddleware, AuthRequest } from "../middleware/auth";
 
 const router = Router();
 
-router.get("/", async (_req: Request, res: Response) => {
+router.use(authMiddleware);
+
+router.get("/", async (_req: AuthRequest, res: Response) => {
   try {
     const users = await User.find();
     res.json(users);
@@ -12,7 +15,7 @@ router.get("/", async (_req: Request, res: Response) => {
   }
 });
 
-router.get("/:id", async (req: Request, res: Response) => {
+router.get("/:id", async (req: AuthRequest, res: Response) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) {

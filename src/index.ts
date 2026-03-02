@@ -3,6 +3,8 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import mongoose from "mongoose";
 import userRoutes from "./routes/users";
+import authRoutes from "./routes/auth";
+import organizationRoutes from "./routes/organizations";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,7 +22,9 @@ app.get("/", (_req: Request, res: Response) => {
   res.status(200).json({ status: "ok", message: "Seal Backend API" });
 });
 
+app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/organizations", organizationRoutes);
 
 mongoose
   .connect(MONGODB_URI)

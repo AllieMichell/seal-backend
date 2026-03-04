@@ -593,6 +593,417 @@ DELETE /api/organizations/664f1a2b3c4d5e6f7a8b9c0d
 
 ---
 
+### Listar cotizaciones
+
+```
+GET /api/quotations
+```
+
+Devuelve las cotizaciones de la organizacion del usuario autenticado, con paginacion y filtro por status. Requiere autenticacion.
+
+**Headers**
+
+| Header | Valor |
+|---|---|
+| `Authorization` | `Bearer <accessToken>` |
+
+**Query params**
+
+| Parametro | Tipo | Requerido | Default | Descripcion |
+|---|---|---|---|---|
+| `status` | string | No | — | Filtrar por status: `borrador`, `pendiente`, `aceptada`, `rechazada` |
+| `page` | number | No | `1` | Numero de pagina |
+| `limit` | number | No | `20` | Cantidad de resultados por pagina (max 100) |
+
+**Ejemplo**
+
+```
+GET /api/quotations?status=pendiente&page=1&limit=10
+```
+
+**Respuesta exitosa** `200`
+
+```json
+{
+  "data": [
+    {
+      "_id": "683f1a2b3c4d5e6f7a8b9c01",
+      "organization_id": "664f1a2b3c4d5e6f7a8b9c0a",
+      "created_by": "664f1a2b3c4d5e6f7a8b9c0d",
+      "number": "COT-2025-001",
+      "client": "Constructora del Norte S.A.",
+      "date": "2025-03-01T00:00:00.000Z",
+      "valid_until": "2025-04-01T00:00:00.000Z",
+      "status": "pendiente",
+      "items": [
+        {
+          "name": "Ventana corrediza 1.5m x 1.2m",
+          "description": "Aluminio natural, vidrio claro 6mm",
+          "quantity": 12,
+          "unit_price": 2850.0,
+          "discount": 10
+        }
+      ],
+      "general_discount": 5,
+      "tax_rate": 16,
+      "notes": "Entrega estimada: 3 semanas",
+      "created_at": "2025-03-01T10:30:00.000Z",
+      "updated_at": "2025-03-01T10:30:00.000Z"
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "limit": 10
+}
+```
+
+**Errores**
+
+| Codigo | Mensaje | Causa |
+|---|---|---|
+| `401` | `Access denied. No token provided.` | No se envio el header Authorization |
+| `401` | `Invalid or expired token.` | El access token es invalido o expiro |
+| `403` | `User is not assigned to an organization.` | El usuario no tiene organizacion asignada |
+| `500` | `Error fetching quotations` | Error interno del servidor |
+
+---
+
+### Obtener cotizacion por ID
+
+```
+GET /api/quotations/:id
+```
+
+Devuelve una cotizacion especifica. Solo devuelve cotizaciones de la organizacion del usuario. Requiere autenticacion.
+
+**Headers**
+
+| Header | Valor |
+|---|---|
+| `Authorization` | `Bearer <accessToken>` |
+
+**Parametros de ruta**
+
+| Parametro | Tipo | Descripcion |
+|---|---|---|
+| `id` | string | ID de la cotizacion (MongoDB ObjectId) |
+
+**Ejemplo**
+
+```
+GET /api/quotations/683f1a2b3c4d5e6f7a8b9c01
+```
+
+**Respuesta exitosa** `200`
+
+```json
+{
+  "_id": "683f1a2b3c4d5e6f7a8b9c01",
+  "organization_id": "664f1a2b3c4d5e6f7a8b9c0a",
+  "created_by": "664f1a2b3c4d5e6f7a8b9c0d",
+  "number": "COT-2025-001",
+  "client": "Constructora del Norte S.A.",
+  "date": "2025-03-01T00:00:00.000Z",
+  "valid_until": "2025-04-01T00:00:00.000Z",
+  "status": "pendiente",
+  "items": [
+    {
+      "name": "Ventana corrediza 1.5m x 1.2m",
+      "description": "Aluminio natural, vidrio claro 6mm",
+      "quantity": 12,
+      "unit_price": 2850.0,
+      "discount": 10
+    }
+  ],
+  "general_discount": 5,
+  "tax_rate": 16,
+  "notes": "Entrega estimada: 3 semanas",
+  "created_at": "2025-03-01T10:30:00.000Z",
+  "updated_at": "2025-03-01T10:30:00.000Z"
+}
+```
+
+**Errores**
+
+| Codigo | Mensaje | Causa |
+|---|---|---|
+| `401` | `Access denied. No token provided.` | No se envio el header Authorization |
+| `401` | `Invalid or expired token.` | El access token es invalido o expiro |
+| `403` | `User is not assigned to an organization.` | El usuario no tiene organizacion asignada |
+| `404` | `Quotation not found.` | No existe o no pertenece a la organizacion del usuario |
+| `500` | `Error fetching quotation` | Error interno del servidor |
+
+---
+
+### Crear cotizacion
+
+```
+POST /api/quotations
+```
+
+Crea una nueva cotizacion. El `number` se genera automaticamente con formato `COT-{year}-{sequential}` (ej. `COT-2025-001`). Los campos `organization_id` y `created_by` se inyectan desde el token JWT. Requiere autenticacion.
+
+**Headers**
+
+| Header | Valor |
+|---|---|
+| `Authorization` | `Bearer <accessToken>` |
+| `Content-Type` | `application/json` |
+
+**Body**
+
+| Campo | Tipo | Requerido | Default | Descripcion |
+|---|---|---|---|---|
+| `client` | string | Si | — | Nombre del cliente |
+| `date` | string (ISO 8601) | Si | — | Fecha de la cotizacion |
+| `items` | array | Si | — | Lista de articulos (minimo 1) |
+| `items[].name` | string | Si | — | Nombre del articulo |
+| `items[].description` | string | No | `""` | Descripcion del articulo |
+| `items[].quantity` | number | Si | — | Cantidad (minimo 1) |
+| `items[].unit_price` | number | Si | — | Precio unitario (minimo 0) |
+| `items[].discount` | number | No | `0` | Descuento por articulo en porcentaje (0-100) |
+| `tax_rate` | number | No | `16` | Porcentaje de impuesto (ej. IVA) |
+| `valid_until` | string (ISO 8601) | No | `null` | Fecha de vencimiento |
+| `general_discount` | number | No | `0` | Descuento general en porcentaje (0-100) |
+| `notes` | string | No | `null` | Notas u observaciones |
+
+**Ejemplo de body**
+
+```json
+{
+  "client": "Constructora del Norte S.A.",
+  "date": "2025-03-01T00:00:00.000Z",
+  "items": [
+    {
+      "name": "Ventana corrediza 1.5m x 1.2m",
+      "description": "Aluminio natural, vidrio claro 6mm",
+      "quantity": 12,
+      "unit_price": 2850.0,
+      "discount": 10
+    },
+    {
+      "name": "Puerta abatible 0.9m x 2.1m",
+      "description": "Aluminio blanco, vidrio templado 6mm",
+      "quantity": 4,
+      "unit_price": 4200.0
+    }
+  ],
+  "tax_rate": 16,
+  "valid_until": "2025-04-01T00:00:00.000Z",
+  "general_discount": 5,
+  "notes": "Entrega estimada: 3 semanas"
+}
+```
+
+**Respuesta exitosa** `201`
+
+```json
+{
+  "_id": "683f1a2b3c4d5e6f7a8b9c01",
+  "organization_id": "664f1a2b3c4d5e6f7a8b9c0a",
+  "created_by": "664f1a2b3c4d5e6f7a8b9c0d",
+  "number": "COT-2025-001",
+  "client": "Constructora del Norte S.A.",
+  "date": "2025-03-01T00:00:00.000Z",
+  "valid_until": "2025-04-01T00:00:00.000Z",
+  "status": "borrador",
+  "items": [
+    {
+      "name": "Ventana corrediza 1.5m x 1.2m",
+      "description": "Aluminio natural, vidrio claro 6mm",
+      "quantity": 12,
+      "unit_price": 2850.0,
+      "discount": 10
+    },
+    {
+      "name": "Puerta abatible 0.9m x 2.1m",
+      "description": "Aluminio blanco, vidrio templado 6mm",
+      "quantity": 4,
+      "unit_price": 4200.0,
+      "discount": 0
+    }
+  ],
+  "general_discount": 5,
+  "tax_rate": 16,
+  "notes": "Entrega estimada: 3 semanas",
+  "created_at": "2025-03-01T10:30:00.000Z",
+  "updated_at": "2025-03-01T10:30:00.000Z"
+}
+```
+
+**Errores**
+
+| Codigo | Mensaje | Causa |
+|---|---|---|
+| `400` | `client, date, and at least one item are required.` | Faltan campos obligatorios |
+| `401` | `Access denied. No token provided.` | No se envio el header Authorization |
+| `401` | `Invalid or expired token.` | El access token es invalido o expiro |
+| `403` | `User is not assigned to an organization.` | El usuario no tiene organizacion asignada |
+| `500` | `Error creating quotation` | Error interno del servidor |
+
+---
+
+### Actualizar cotizacion
+
+```
+PUT /api/quotations/:id
+```
+
+Actualiza una cotizacion existente. Solo se actualizan los campos enviados en el body (actualizacion parcial). Requiere autenticacion.
+
+**Headers**
+
+| Header | Valor |
+|---|---|
+| `Authorization` | `Bearer <accessToken>` |
+| `Content-Type` | `application/json` |
+
+**Parametros de ruta**
+
+| Parametro | Tipo | Descripcion |
+|---|---|---|
+| `id` | string | ID de la cotizacion (MongoDB ObjectId) |
+
+**Body**
+
+Cualquier combinacion de los siguientes campos:
+
+| Campo | Tipo | Descripcion |
+|---|---|---|
+| `client` | string | Nombre del cliente |
+| `date` | string (ISO 8601) | Fecha de la cotizacion |
+| `items` | array | Lista de articulos (reemplaza todos los items) |
+| `tax_rate` | number | Porcentaje de impuesto |
+| `valid_until` | string / null | Fecha de vencimiento |
+| `general_discount` | number | Descuento general (0-100) |
+| `notes` | string / null | Notas u observaciones |
+| `status` | string | `borrador`, `pendiente`, `aceptada`, `rechazada` |
+
+**Ejemplo de body**
+
+```json
+{
+  "client": "Constructora del Sur S.A.",
+  "general_discount": 10,
+  "notes": "Entrega estimada: 2 semanas"
+}
+```
+
+**Respuesta exitosa** `200`
+
+Devuelve el documento actualizado completo.
+
+**Errores**
+
+| Codigo | Mensaje | Causa |
+|---|---|---|
+| `400` | `Invalid status. Must be one of: borrador, pendiente, aceptada, rechazada` | Se envio un status invalido |
+| `401` | `Access denied. No token provided.` | No se envio el header Authorization |
+| `401` | `Invalid or expired token.` | El access token es invalido o expiro |
+| `403` | `User is not assigned to an organization.` | El usuario no tiene organizacion asignada |
+| `404` | `Quotation not found.` | No existe o no pertenece a la organizacion del usuario |
+| `500` | `Error updating quotation` | Error interno del servidor |
+
+---
+
+### Cambiar status de cotizacion
+
+```
+PATCH /api/quotations/:id/status
+```
+
+Cambia unicamente el status de una cotizacion. Requiere autenticacion.
+
+**Headers**
+
+| Header | Valor |
+|---|---|
+| `Authorization` | `Bearer <accessToken>` |
+| `Content-Type` | `application/json` |
+
+**Parametros de ruta**
+
+| Parametro | Tipo | Descripcion |
+|---|---|---|
+| `id` | string | ID de la cotizacion (MongoDB ObjectId) |
+
+**Body**
+
+| Campo | Tipo | Requerido | Descripcion |
+|---|---|---|---|
+| `status` | string | Si | Nuevo status: `borrador`, `pendiente`, `aceptada`, `rechazada` |
+
+**Ejemplo de body**
+
+```json
+{
+  "status": "aceptada"
+}
+```
+
+**Respuesta exitosa** `200`
+
+Devuelve el documento actualizado completo.
+
+**Errores**
+
+| Codigo | Mensaje | Causa |
+|---|---|---|
+| `400` | `Invalid status. Must be one of: borrador, pendiente, aceptada, rechazada` | Se envio un status invalido o no se envio |
+| `401` | `Access denied. No token provided.` | No se envio el header Authorization |
+| `401` | `Invalid or expired token.` | El access token es invalido o expiro |
+| `403` | `User is not assigned to an organization.` | El usuario no tiene organizacion asignada |
+| `404` | `Quotation not found.` | No existe o no pertenece a la organizacion del usuario |
+| `500` | `Error updating quotation status` | Error interno del servidor |
+
+---
+
+### Eliminar cotizacion
+
+```
+DELETE /api/quotations/:id
+```
+
+Elimina una cotizacion por su ID. Solo puede eliminar cotizaciones de su organizacion. Requiere autenticacion.
+
+**Headers**
+
+| Header | Valor |
+|---|---|
+| `Authorization` | `Bearer <accessToken>` |
+
+**Parametros de ruta**
+
+| Parametro | Tipo | Descripcion |
+|---|---|---|
+| `id` | string | ID de la cotizacion (MongoDB ObjectId) |
+
+**Ejemplo**
+
+```
+DELETE /api/quotations/683f1a2b3c4d5e6f7a8b9c01
+```
+
+**Respuesta exitosa** `200`
+
+```json
+{
+  "message": "Quotation deleted successfully."
+}
+```
+
+**Errores**
+
+| Codigo | Mensaje | Causa |
+|---|---|---|
+| `401` | `Access denied. No token provided.` | No se envio el header Authorization |
+| `401` | `Invalid or expired token.` | El access token es invalido o expiro |
+| `403` | `User is not assigned to an organization.` | El usuario no tiene organizacion asignada |
+| `404` | `Quotation not found.` | No existe o no pertenece a la organizacion del usuario |
+| `500` | `Error deleting quotation` | Error interno del servidor |
+
+---
+
 ## Colecciones en MongoDB
 
 | Coleccion | Descripcion |
@@ -600,6 +1011,7 @@ DELETE /api/organizations/664f1a2b3c4d5e6f7a8b9c0d
 | `users` | Usuarios registrados (`name`, `email`, `phone`, `password`) |
 | `tokens` | Refresh tokens activos (`userId`, `refreshToken`, `expiresAt`) con TTL index que los elimina automaticamente al expirar |
 | `organizations` | Organizaciones (`name`, `slug`, `settings`, `created_at`) con indice unico en `slug` |
+| `quotations` | Cotizaciones (`number`, `client`, `date`, `status`, `items`, `tax_rate`, etc.) con indices compuestos en `organization_id` + `number` (unique), `organization_id` + `status`, y `organization_id` + `created_at` |
 
 ## Flujo de autenticacion
 

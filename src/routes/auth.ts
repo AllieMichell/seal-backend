@@ -8,8 +8,10 @@ import { authMiddleware, AuthRequest } from "../middleware/auth";
 
 const router = Router();
 
-function generateAccessToken(userId: string): string {
-  return jwt.sign({ userId }, process.env.JWT_SECRET!, { expiresIn: "1h" });
+function generateAccessToken(userId: string, organizationId?: string): string {
+  return jwt.sign({ userId, organizationId }, process.env.JWT_SECRET!, {
+    expiresIn: "1h",
+  });
 }
 
 async function generateRefreshToken(userId: string): Promise<string> {
@@ -41,7 +43,10 @@ router.post("/register", async (req: Request, res: Response) => {
     });
 
     const userId = user._id.toString();
-    const accessToken = generateAccessToken(userId);
+    const accessToken = generateAccessToken(
+      userId,
+      user.organization?.toString()
+    );
     const refreshToken = await generateRefreshToken(userId);
 
     res.status(201).json({ accessToken, refreshToken });
@@ -67,7 +72,10 @@ router.post("/login", async (req: Request, res: Response) => {
     }
 
     const userId = user._id.toString();
-    const accessToken = generateAccessToken(userId);
+    const accessToken = generateAccessToken(
+      userId,
+      user.organization?.toString()
+    );
     const refreshToken = await generateRefreshToken(userId);
 
     res.json({ accessToken, refreshToken });
@@ -99,7 +107,11 @@ router.post("/refresh", async (req: Request, res: Response) => {
 
     await storedToken.deleteOne();
 
-    const accessToken = generateAccessToken(storedToken.userId.toString());
+    const user = await User.findById(storedToken.userId);
+    const accessToken = generateAccessToken(
+      storedToken.userId.toString(),
+      user?.organization?.toString()
+    );
     const newRefreshToken = await generateRefreshToken(
       storedToken.userId.toString()
     );

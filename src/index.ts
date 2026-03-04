@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import userRoutes from "./routes/users";
 import authRoutes from "./routes/auth";
 import organizationRoutes from "./routes/organizations";
+import quotationRoutes from "./routes/quotations";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +26,7 @@ app.get("/", (_req: Request, res: Response) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/organizations", organizationRoutes);
+app.use("/api/quotations", quotationRoutes);
 
 mongoose
   .connect(MONGODB_URI)

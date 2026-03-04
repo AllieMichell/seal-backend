@@ -8,7 +8,7 @@ router.use(authMiddleware);
 
 router.get("/", async (_req: AuthRequest, res: Response) => {
   try {
-    const users = await User.find();
+    const users = await User.find().populate("organization");
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: "Error fetching users", error });
@@ -17,7 +17,7 @@ router.get("/", async (_req: AuthRequest, res: Response) => {
 
 router.get("/:id", async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).populate("organization");
     if (!user) {
       res.status(404).json({ message: "User not found" });
       return;

@@ -735,6 +735,38 @@ GET /api/quotations/683f1a2b3c4d5e6f7a8b9c01
 
 ---
 
+### Obtener cotizacion por ID (publico)
+
+```
+GET /api/quotations/public/:id
+```
+
+Obtiene una cotizacion por ID. **No requiere autenticacion.** Cualquier persona con el ID puede ver la cotizacion (por ejemplo, mediante un enlace compartido).
+
+**Parametros de ruta**
+
+| Parametro | Tipo | Descripcion |
+|---|---|---|
+| `id` | string | ID de la cotizacion (MongoDB ObjectId) |
+
+**Ejemplo**
+
+```
+GET /api/quotations/public/683f1a2b3c4d5e6f7a8b9c01
+```
+
+**Respuesta exitosa** `200` — Mismo cuerpo JSON que `GET /api/quotations/:id`.
+
+**Errores**
+
+| Codigo | Mensaje | Causa |
+|---|---|---|
+| `400` | `Invalid quotation ID.` | El `id` no es un ObjectId valido |
+| `404` | `Quotation not found.` | No existe una cotizacion con ese ID |
+| `500` | `Error fetching quotation` | Error interno del servidor |
+
+---
+
 ### Crear cotizacion
 
 ```

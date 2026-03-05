@@ -1,8 +1,28 @@
-import { Router, Response } from "express";
+import { Router, Response, Request } from "express";
+import mongoose from "mongoose";
 import { Quotation } from "../models/quotation";
 import { authMiddleware, AuthRequest } from "../middleware/auth";
 
 const router = Router();
+
+// GET /api/quotations/public/:id — público, no requiere token
+router.get("/public/:id", async (req: Request, res: Response) => {
+  try {
+    const id = typeof req.params.id === "string" ? req.params.id : req.params.id?.[0] ?? "";
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      res.status(400).json({ message: "Invalid quotation ID." });
+      return;
+    }
+    const quotation = await Quotation.findById(id);
+    if (!quotation) {
+      res.status(404).json({ message: "Quotation not found." });
+      return;
+    }
+    res.json(quotation);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching quotation", error });
+  }
+});
 
 router.use(authMiddleware);
 

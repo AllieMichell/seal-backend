@@ -6,10 +6,14 @@ const router = Router();
 
 router.use(authMiddleware);
 
-router.get("/", async (_req: AuthRequest, res: Response) => {
+router.get("/", async (req: AuthRequest, res: Response) => {
   try {
-    const organizations = await Organization.find();
-    res.json(organizations);
+    if (!req.organizationId) {
+      res.status(403).json({ message: "Organization context is required." });
+      return;
+    }
+    const organization = await Organization.findById(req.organizationId);
+    res.json(organization ? [organization] : []);
   } catch (error) {
     res.status(500).json({ message: "Error fetching organizations", error });
   }
@@ -17,6 +21,10 @@ router.get("/", async (_req: AuthRequest, res: Response) => {
 
 router.get("/:id", async (req: AuthRequest, res: Response) => {
   try {
+    if (req.organizationId && req.params.id !== req.organizationId) {
+      res.status(403).json({ message: "Access denied." });
+      return;
+    }
     const organization = await Organization.findById(req.params.id);
     if (!organization) {
       res.status(404).json({ message: "Organization not found" });
@@ -49,6 +57,10 @@ router.post("/", async (req: AuthRequest, res: Response) => {
 
 router.put("/:id", async (req: AuthRequest, res: Response) => {
   try {
+    if (req.organizationId && req.params.id !== req.organizationId) {
+      res.status(403).json({ message: "Access denied." });
+      return;
+    }
     const organization = await Organization.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -66,6 +78,10 @@ router.put("/:id", async (req: AuthRequest, res: Response) => {
 
 router.delete("/:id", async (req: AuthRequest, res: Response) => {
   try {
+    if (req.organizationId && req.params.id !== req.organizationId) {
+      res.status(403).json({ message: "Access denied." });
+      return;
+    }
     const organization = await Organization.findByIdAndDelete(req.params.id);
     if (!organization) {
       res.status(404).json({ message: "Organization not found" });

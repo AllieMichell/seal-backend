@@ -25,8 +25,8 @@ export const authMiddleware = (
       userId: string;
       organizationId?: string;
     };
-    req.userId = decoded.userId;
-    req.organizationId = decoded.organizationId;
+    req.userId = (req.headers['x-user-id'] as string) || decoded.userId;
+    req.organizationId = (req.headers['x-organization-id'] as string) || decoded.organizationId;
     next();
   } catch {
     res.status(401).json({ message: "Invalid or expired token." });

@@ -6,9 +6,13 @@ const router = Router();
 
 router.use(authMiddleware);
 
-router.get("/", async (_req: AuthRequest, res: Response) => {
+router.get("/", async (req: AuthRequest, res: Response) => {
   try {
-    const users = await User.find().populate("organization");
+    if (!req.organizationId) {
+      res.status(403).json({ message: "Organization context is required." });
+      return;
+    }
+    const users = await User.find({ organization: req.organizationId }).populate("organization");
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: "Error fetching users", error });
@@ -17,7 +21,14 @@ router.get("/", async (_req: AuthRequest, res: Response) => {
 
 router.get("/:id", async (req: AuthRequest, res: Response) => {
   try {
-    const user = await User.findById(req.params.id).populate("organization");
+    if (!req.organizationId) {
+      res.status(403).json({ message: "Organization context is required." });
+      return;
+    }
+    const user = await User.findOne({
+      _id: req.params.id,
+      organization: req.organizationId,
+    }).populate("organization");
     if (!user) {
       res.status(404).json({ message: "User not found" });
       return;

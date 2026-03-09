@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= content.header && content.header.title ? content.header.title : 'Propuesta' %></title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, sans-serif; line-height: 1.5; color: #333; }
+    .header {
+      min-height: 280px;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      background: linear-gradient(135deg, #2d5a27 0%, #1e3d1a 100%);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .header.bg-image { background-size: cover; background-position: center; }
+    .header h1 { font-size: 2.5rem; margin-bottom: 0.25rem; }
+    .header .subtitle { font-size: 1.1rem; opacity: 0.95; margin-bottom: 1.5rem; }
+    .proposal-info { font-size: 0.95rem; margin-top: 1rem; }
+    .proposal-info p { margin: 0.25rem 0; }
+    .section { padding: 2rem; max-width: 900px; margin: 0 auto; }
+    .section h2 { font-size: 1.75rem; margin-bottom: 1rem; color: #1a1a1a; }
+    .about-description { white-space: pre-wrap; }
+    .gallery { background: #e85d04; color: #fff; padding: 2rem; }
+    .gallery h2 { color: #fff; margin-bottom: 1.5rem; }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+    .gallery-item { background: #fff; color: #333; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .gallery-item img { width: 100%; height: 160px; object-fit: cover; display: block; }
+    .gallery-item .caption { padding: 0.75rem; font-size: 0.9rem; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <header class="header <%= (content.header && content.header.backgroundImage) ? 'bg-image' : '' %>" <% if (content.header && content.header.backgroundImage) { %>style="background-image: url('<%= content.header.backgroundImage %>');"<% } %>>
+    <% if (content.header) { %>
+      <h1><%= content.header.title || 'Propuesta' %></h1>
+      <% if (content.header.subtitle) { %><p class="subtitle"><%= content.header.subtitle %></p><% } %>
+      <% if (content.header.proposal) { %>
+        <div class="proposal-info">
+          <p><strong>PROPUESTA</strong></p>
+          <p>Para: <%= content.header.proposal.recipient || '—' %></p>
+          <p>Fecha: <%= content.header.proposal.date || '—' %></p>
+          <p>Lugar: <%= content.header.proposal.location || '—' %></p>
+        </div>
+      <% } %>
+    <% } %>
+  </header>
+
+  <% if (content.aboutUs) { %>
+    <section class="section">
+      <h2><%= content.aboutUs.heading || 'Sobre nosotros' %></h2>
+      <div class="about-description"><%= content.aboutUs.description || '' %></div>
+    </section>
+  <% } %>
+
+  <% if (content.ourWork && content.ourWork.items && content.ourWork.items.length) { %>
+    <section class="gallery">
+      <h2><%= content.ourWork.heading || 'Nuestro Trabajo' %></h2>
+      <div class="gallery-grid">
+        <% content.ourWork.items.forEach(function(item) { %>
+          <div class="gallery-item">
+            <img src="<%= item.imageUrl || '' %>" alt="<%= item.caption || '' %>" />
+            <div class="caption"><%= item.caption || '' %></div>
+          </div>
+        <% }); %>
+      </div>
+    </section>
+  <% } %>
+</body>
+</html>

@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recomienda MTY - Media Kit 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --rojo: #e11d2e;
+      --rojo-oscuro: #c41a28;
+      --blanco: #ffffff;
+      --negro: #0f0f0f;
+      --gris: #444;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Montserrat', sans-serif; color: var(--negro); }
+
+    .section {
+      padding: clamp(40px, 8vw, 72px) clamp(20px, 5vw, 40px);
+      margin: 0 auto;
+    }
+
+    .section--red { background: var(--rojo); color: var(--blanco); }
+    .section--white { background: var(--blanco); color: var(--negro); }
+    .section--gray { background: #f8f8f8; color: var(--negro); }
+
+    h1, h2, h3 { margin: 0 0 0.5em 0; font-weight: 700; }
+    .section--red h2 { color: var(--blanco); }
+    .section--white h2 { color: var(--rojo); }
+    .section--gray h2 { color: var(--rojo); }
+
+    /* ----- Scroll animations: elementos entran al hacer scroll ----- */
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+    .animate-on-scroll.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .animate-on-scroll.delay-1 { transition-delay: 0.1s; }
+    .animate-on-scroll.delay-2 { transition-delay: 0.2s; }
+    .animate-on-scroll.delay-3 { transition-delay: 0.3s; }
+    .animate-on-scroll.delay-4 { transition-delay: 0.4s; }
+
+    /* ----- CINTILLA SUPERIOR ----- */
+    .topbar {
+      background: var(--blanco);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      padding: 14px clamp(20px, 4vw, 32px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      font-weight: 500;
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .topbar-left strong { color: var(--rojo); font-size: 1.1rem; }
+    .topbar-left span { color: var(--gris); }
+    .topbar-right { color: var(--gris); font-size: 0.9rem; }
+
+    /* ----- HERO COVER: propuesta (foto influencers, nombre, lugar, fecha, ID) ----- */
+    .hero-cover {
+      height: 560px;
+      min-height: 65vh;
+      background: url('https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=1600&q=80') center/cover;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: var(--blanco);
+      position: relative;
+    }
+    .hero-cover::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.6) 100%);
+      pointer-events: none;
+    }
+    .hero-cover__content {
+      position: relative;
+      z-index: 1;
+      padding: 24px;
+      max-width: 560px;
+    }
+    .hero-cover__logo {
+      width: 100px;
+      height: auto;
+      margin-bottom: 16px;
+      filter: brightness(0) invert(1);
+    }
+    .hero-cover h1 {
+      font-size: clamp(2rem, 5vw, 2.75rem);
+      margin: 0 0 6px 0;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .hero-cover .hero-cover__tagline {
+      font-size: clamp(1rem, 2vw, 1.1rem);
+      opacity: 0.95;
+      margin: 0 0 28px 0;
+    }
+    .hero-cover__meta { font-size: 14px; opacity: 0.9; margin: 0; }
+    .hero-cover__propuesta {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,0.3);
+      text-align: left;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .hero-cover__propuesta .row {
+      display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .hero-cover__propuesta .row:last-child { margin-bottom: 0; }
+    .hero-cover__propuesta .label { opacity: 0.85; }
+    .hero-cover__propuesta .value { font-weight: 600; }
+
+    @media (max-width: 768px) {
+      .hero-cover {
+        min-height: 88vh;
+        height: 88vh;
+      }
+    }
+
+    /* ----- HERO (sección roja con contenido) ----- */
+    .hero {
+      min-height: 70vh;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(28px, 5vw, 56px);
+      text-align: center;
+    }
+
+    .hero__brand {
+      font-size: clamp(0.85rem, 2vw, 1rem);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0.9;
+      margin-bottom: 8px;
+    }
+
+    .hero__image {
+      flex-shrink: 0;
+      width: 100%;
+      max-width: 320px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+
+    .hero__image img {
+      display: block;
+      width: 100%;
+      height: auto;
+      aspect-ratio: 1;
+      object-fit: cover;
+    }
+
+    .hero__content {
+      flex: 1;
+      min-width: 280px;
+      max-width: 540px;
+      text-align: left;
+    }
+
+    .hero__title {
+      font-size: clamp(1.75rem, 4vw, 2.25rem);
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .hero__title .line2 { font-size: 0.95em; }
+    .hero__underline {
+      width: 60px;
+      height: 4px;
+      background: var(--rojo-oscuro);
+      margin-bottom: 20px;
+    }
+
+    .hero__intro {
+      font-size: clamp(0.95rem, 1.8vw, 1.05rem);
+      line-height: 1.65;
+      margin-bottom: 24px;
+      opacity: 0.98;
+    }
+
+    .hero__slogan {
+      font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+      font-weight: 700;
+    }
+
+    .hero__inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(28px, 5vw, 56px);
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* ----- NUESTRA COMUNIDAD ----- */
+    .community h2 {
+      font-size: clamp(1.5rem, 3.5vw, 2rem);
+      text-align: center;
+      margin-bottom: clamp(28px, 5vw, 48px);
+      text-transform: lowercase;
+    }
+
+    .social-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(20px, 4vw, 32px);
+      justify-items: center;
+    }
+
+    .social-card {
+      text-align: center;
+      padding: 24px 16px;
+      border-radius: 16px;
+      background: var(--blanco);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      min-width: 0;
+    }
+
+    .social-card .icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--negro);
+      color: var(--blanco);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .social-card .icon svg { width: 22px; height: 22px; }
+    .social-card .handle { font-size: 0.9rem; font-weight: 600; margin-bottom: 4px; }
+    .social-card .count { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; color: var(--rojo); }
+    .social-card .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--gris); }
+
+    @media (max-width: 640px) {
+      .social-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ----- ALCANCE ----- */
+    .alcance__total {
+      text-align: center;
+      margin-bottom: clamp(32px, 6vw, 56px);
+    }
+
+    .alcance__total .big {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .alcance__total .sub { font-size: 0.9rem; opacity: 0.9; margin-top: 4px; }
+
+    .platforms {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+    }
+
+    .platform-card {
+      background: rgba(255,255,255,0.12);
+      border-radius: 16px;
+      padding: 28px;
+      backdrop-filter: blur(8px);
+    }
+
+    .platform-card h3 {
+      font-size: 1.1rem;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid rgba(255,255,255,0.3);
+    }
+
+    .platform-card .stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+    }
+
+    .platform-card .stat .num { font-weight: 700; font-size: 1.1rem; }
+
+    /* ----- AUDIENCIA: barra se llena con animación ----- */
+    .audience {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 32px;
+      align-items: center;
+      justify-content: center;
+      margin-top: 24px;
+    }
+
+    .audience__bar {
+      display: flex;
+      width: 100%;
+      max-width: 400px;
+      height: 32px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #e5e5e5;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .audience__bar .mujeres {
+      width: 0;
+      background: var(--rojo);
+      transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .audience__bar .hombres {
+      width: 0;
+      background: var(--negro);
+      transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition-delay: 0.15s;
+    }
+
+    .audience__bar.is-filled .mujeres { width: 53%; }
+    .audience__bar.is-filled .hombres { width: 47%; }
+
+    .audience__labels {
+      display: flex;
+      gap: 24px;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .audience__labels span { display: flex; align-items: center; gap: 8px; }
+    .audience__labels .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .audience__labels .dot--m { background: var(--rojo); }
+    .audience__labels .dot--h { background: var(--negro); }
+
+    /* ----- COLABORACIONES ----- */
+    .collab-logos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 16px;
+    }
+
+    .collab-logos span {
+      background: var(--blanco);
+      color: var(--negro);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* ----- COLABORA ----- */
+    .colabora h2 { text-align: center; margin-bottom: 16px; }
+    .colabora .sub { text-align: center; margin-bottom: 32px; opacity: 0.95; }
+
+    /* ----- TABLA DE PRECIOS (estilo propuesta / cotización) ----- */
+    .quote-card {
+      background: var(--blanco);
+      color: var(--negro);
+      border-radius: 16px;
+      overflow: hidden;
+      max-width: 640px;
+      margin: 0 auto 32px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+    .quote-item {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 20px 24px;
+      border-bottom: 1px solid #eee;
+    }
+    .quote-item:last-of-type { border-bottom: none; }
+    .quote-item__left { flex: 1; min-width: 0; }
+    .quote-item__title { font-weight: 700; font-size: 1.05rem; color: var(--negro); margin: 0 0 4px 0; }
+    .quote-item__desc { font-size: 0.9rem; color: var(--gris); margin: 0 0 10px 0; }
+    .quote-item__detail {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+    .quote-item__qty {
+      background: #e5e7eb;
+      color: var(--negro);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+    }
+    .quote-item__price { font-weight: 700; text-align: right; white-space: nowrap; color: var(--negro); }
+    .quote-item__price .old { text-decoration: line-through; color: var(--gris); font-weight: 400; font-size: 0.9rem; display: block; }
+    .quote-summary {
+      padding: 20px 24px;
+      background: #f8fafc;
+      border-top: 2px solid #eee;
+      color: var(--negro);
+    }
+    .quote-summary__title {
+      margin: 0 0 12px 0;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #1a1a1a;
+    }
+    .quote-summary .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 6px 0;
+      font-size: 0.95rem;
+      color: #1a1a1a;
+    }
+    .quote-summary .row .value { color: #1a1a1a; }
+    .quote-summary .row--total {
+      margin-top: 8px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+    .quote-summary .row--total { color: #1a1a1a; }
+    .quote-summary .row--total .value { color: #059669; font-size: 1.35rem; }
+
+    /* ----- CTA Aceptar propuesta ----- */
+    .cta-wrap { text-align: center; }
+    .cta-aceptar {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 360px;
+      margin: 32px auto 0;
+      padding: 20px 32px;
+      background: var(--blanco);
+      color: var(--rojo);
+      font-size: 1.2rem;
+      font-weight: 700;
+      text-decoration: none;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .cta-aceptar:hover {
+      transform: scale(1.02);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+    }
+
+    .includes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .includes li {
+      list-style: none;
+      padding: 16px 20px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    .recomendaciones {
+      font-size: 0.9rem;
+      line-height: 1.7;
+      opacity: 0.95;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .recomendaciones ol { padding-left: 1.2em; margin: 16px 0 0 0; }
+    .recomendaciones li { margin-bottom: 8px; }
+
+    /* ----- CONTACTO (card view con ligas) ----- */
+    .contact-card {
+      max-width: 420px;
+      margin: 0 auto;
+      background: var(--blanco);
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    .contact-card__header {
+      padding: 28px 24px 20px;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+    }
+    .contact-card__name { font-size: 1.35rem; font-weight: 700; color: var(--rojo); margin: 0 0 6px 0; }
+    .contact-card__tagline { font-size: 0.95rem; color: var(--gris); margin: 0; }
+    .contact-card__links {
+      padding: 16px 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .contact-card__link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      text-decoration: none;
+      color: #1a1a1a;
+      font-weight: 500;
+      font-size: 1rem;
+      background: #f8fafc;
+      border: 1px solid #eee;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .contact-card__link:hover {
+      background: #f1f5f9;
+      border-color: #e2e8f0;
+    }
+    .contact-card__link--wa { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+    .contact-card__link--wa:hover { background: #dcfce7; }
+    .contact-card__link--email { color: var(--rojo); }
+    .contact-card__link svg { flex-shrink: 0; width: 22px; height: 22px; }
+  </style>
+</head>
+<body>
+
+  <!-- CINTILLA SUPERIOR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <strong>Recomienda MTY</strong>
+      <span>Propuesta {{number}}</span>
+    </div>
+    <div class="topbar-right">
+      Válida hasta <strong>{{valid_until}}</strong>
+    </div>
+  </header>
+
+  <!-- HERO COVER: propuesta (foto influencers, nombre, lugar, fecha, ID) -->
+  <section class="hero-cover">
+    <div class="hero-cover__content">
+      <img src="https://dummyimage.com/200x80/ffffff/e11d2e&text=Recomienda+MTY" alt="Recomienda MTY" class="hero-cover__logo" />
+      <h1>Recomienda MTY</h1>
+      <p class="hero-cover__tagline">Exploramos experiencias gastronómicas en Monterrey</p>
+      <div class="hero-cover__propuesta">
+        <div class="row"><span class="label">Dirigido a</span><span class="value">{{client}}</span></div>
+        <!-- <div class="row"><span class="label">Lugar</span><span class="value">{{location}}</span></div> -->
+        <div class="row"><span class="label">Fecha</span><span class="value">{{date}}</span></div>
+        <div class="row"><span class="label">ID de la propuesta</span><span class="value">{{number}}</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HERO: Detrás de cada recomendación -->
+  <section class="section section--red hero">
+    <div class="hero__inner">
+      <div class="hero__image animate-on-scroll">
+        <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&q=80" alt="Recomienda MTY" />
+      </div>
+      <div class="hero__content">
+        <p class="hero__brand animate-on-scroll">Media Kit 2026</p>
+        <h1 class="hero__title animate-on-scroll delay-1">Detrás de cada <span class="line2">recomendación</span></h1>
+        <div class="hero__underline animate-on-scroll delay-1"></div>
+        <p class="hero__intro animate-on-scroll delay-2">
+          Somos Abner y Jimena, detrás de <strong>Recomienda MTY</strong>.
+          Exploramos experiencias y propuestas gastronómicas en Monterrey y las convertimos en recomendaciones auténticas que impulsan restaurantes y marcas, conectando con una audiencia local y viajera en Instagram, Facebook y TikTok.
+        </p>
+        <p class="hero__slogan animate-on-scroll delay-3">Creamos contenido que sí se recomienda.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- NUESTRA COMUNIDAD -->
+  <section class="section section--white community">
+    <h2 class="animate-on-scroll">nuestra comunidad</h2>
+    <div class="social-grid">
+      <div class="social-card animate-on-scroll delay-1">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        </div>
+        <div class="handle">Recomienda MTY</div>
+        <div class="count count-up" data-count="89" data-format="k">0K</div>
+        <div class="label">Followers</div>
+      </div>
+      <div class="social-card animate-on-scroll delay-2">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+        </div>
+        <div class="handle">@recomienda_mty</div>
+        <div class="count count-up" data-count="164" data-format="k">0K</div>
+        <div class="label">Followers</div>
+      </div>
+      <div class="social-card animate-on-scroll delay-3">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/></svg>
+        </div>
+        <div class="handle">@recomiendamty</div>
+        <div class="count count-up" data-count="219.7" data-format="k" data-decimals="1">0K</div>
+        <div class="label">Followers</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ALCANCE -->
+  <section class="section section--red">
+    <h2 class="animate-on-scroll" style="text-align: center; margin-bottom: 8px;">Alcance</h2>
+    <div class="alcance__total animate-on-scroll">
+      <div class="big count-up" data-count="386142" data-format="int" data-prefix="+">0</div>
+      <div class="sub">Presencia en redes</div>
+    </div>
+    <div class="platforms">
+      <div class="platform-card animate-on-scroll delay-1">
+        <h3>Instagram</h3>
+        <div class="stat"><span>Followers</span><span class="num count-up" data-count="164" data-format="k">0K</span></div>
+        <div class="stat"><span>Vistas (Nov-Dic 2025)</span><span class="num count-up" data-count="1.2" data-format="m" data-prefix="+">0</span></div>
+        <div class="stat"><span>Reels, Stories y Posts</span><span class="num">+1M / +524K</span></div>
+      </div>
+      <div class="platform-card animate-on-scroll delay-2">
+        <h3>Facebook</h3>
+        <div class="stat"><span>Followers</span><span class="num count-up" data-count="89" data-format="k">0K</span></div>
+        <div class="stat"><span>Vistas (Dic 2025)</span><span class="num count-up" data-count="2.8" data-format="m" data-prefix="+">0</span></div>
+        <div class="stat"><span>Vistas en Reels</span><span class="num count-up" data-count="631" data-format="k" data-prefix="+">0</span></div>
+        <div class="stat"><span>Interacciones</span><span class="num count-up" data-count="42" data-format="k" data-prefix="+">0</span></div>
+      </div>
+      <div class="platform-card animate-on-scroll delay-3">
+        <h3>TikTok</h3>
+        <div class="stat"><span>Followers</span><span class="num count-up" data-count="219.7" data-format="k" data-decimals="1">0K</span></div>
+        <div class="stat"><span>Vistas (Reel)</span><span class="num count-up" data-count="1.7" data-format="m" data-prefix="+">0</span></div>
+        <div class="stat"><span>Vistas en posts</span><span class="num count-up" data-count="948" data-format="k" data-prefix="+">0</span></div>
+        <div class="stat"><span>Alcance</span><span class="num count-up" data-count="219" data-format="k" data-prefix="+">0</span> cuentas</div>
+        <div class="stat"><span>Interacciones</span><span class="num count-up" data-count="55" data-format="k" data-prefix="+">0</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COLABORACIONES + AUDIENCIA -->
+  <section class="section section--white">
+    <h2 class="animate-on-scroll">Colaboraciones especiales</h2>
+    <div class="collab-logos animate-on-scroll">
+      <span>DOBO</span>
+      <span>CINÉPOLIS</span>
+      <span>SHEIN</span>
+    </div>
+    <p class="animate-on-scroll" style="text-align: center; margin-top: 24px; font-size: 0.95rem; color: var(--gris);">Alcance <span class="count-up" data-count="88" data-format="k" data-prefix="+">0</span> cuentas (Dic 2025)</p>
+
+    <h2 class="animate-on-scroll" style="margin-top: 48px;">Audiencia</h2>
+    <div class="audience">
+      <div class="audience__bar" id="audience-bar">
+        <span class="mujeres" title="53%"></span>
+        <span class="hombres" title="47%"></span>
+      </div>
+    </div>
+    <div class="audience__labels animate-on-scroll">
+      <span><span class="dot dot--m"></span> 53% Mujeres</span>
+      <span><span class="dot dot--h"></span> 46% Hombres</span>
+    </div>
+  </section>
+
+  <!-- COLABORA -->
+  <section class="section section--red colabora">
+    <h2 class="animate-on-scroll">Colabora con Recomienda MTY</h2>
+    <p class="sub animate-on-scroll">Durante la visita capturamos contenido para redes que resalte la experiencia, el ambiente y los productos. El material se adapta a cada plataforma, mostrando platillos, espacios y detalles para atraer visitas reales.</p>
+
+    <div class="quote-card animate-on-scroll">
+      {{itemsHtml}}
+      <div class="quote-summary">
+        <p class="quote-summary__title">Resumen</p>
+        <div class="row"><span>Subtotal</span><span class="value">{{subtotal}}</span></div>
+        <div class="row"><span>IVA ({{tax_rate}}%)</span><span class="value">{{iva}}</span></div>
+        <div class="row row--total"><span>TOTAL</span><span class="value">{{total}}</span></div>
+      </div>
+      
+    </div>
+
+    <div class="cta-wrap animate-on-scroll">
+      <a href="https://wa.me/528127331069?text=Hola%2C%20acepto%20la%20propuesta%20Recomienda%20MTY" class="cta-aceptar" target="_blank" rel="noopener">Aceptar propuesta</a>
+    </div>
+
+    <div class="recomendaciones animate-on-scroll">
+      <strong>Recomendaciones:</strong>
+      <ol>
+        <li>Si tu negocio es un restaurante, sugerimos mostrar máximo 5 platillos para optimizar el tiempo de grabación y lograr un video dinámico.</li>
+        <li>Si la preparación requiere tiempo, te avisamos cuando estemos en camino para que puedas comenzar con la preparación.</li>
+      </ol>
+      <p style="margin-top: 16px;">El contenido se publica en nuestras redes y permanece de forma orgánica. Fechas sujetas a disponibilidad.</p>
+    </div>
+  </section>
+
+  <!-- CONTACTO -->
+  <section class="section section--white">
+    <h2 class="animate-on-scroll" style="text-align: center; margin-bottom: 32px;">Datos de contacto</h2>
+    <div class="contact-card animate-on-scroll">
+      <div class="contact-card__header">
+        <p class="contact-card__name">Jimena Zúñiga</p>
+        <p class="contact-card__tagline">Lo bueno se recomienda.</p>
+      </div>
+      <div class="contact-card__links">
+        <a href="tel:+528127331069" class="contact-card__link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+          <span>Llamar · 812 733 1069</span>
+        </a>
+        <a href="https://wa.me/528127331069" class="contact-card__link contact-card__link--wa" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          <span>WhatsApp · 812 733 1069</span>
+        </a>
+        <a href="mailto:recomiendamonterrey@gmail.com" class="contact-card__link contact-card__link--email">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <span>recomiendamonterrey@gmail.com</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    (function() {
+      var duration = 1800;
+      var easing = function(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; };
+
+      function formatCount(value, format, prefix, decimals) {
+        prefix = prefix || '';
+        if (format === 'k') {
+          if (value >= 1000) return prefix + (value / 1000).toFixed(decimals ? 1 : 0).replace(/\.0$/, '') + 'K';
+          return prefix + (decimals ? value.toFixed(1) : Math.round(value)) + 'K';
+        }
+        if (format === 'm') {
+          return prefix + value.toFixed(1).replace(/\.0$/, '') + 'M';
+        }
+        if (format === 'int') {
+          return prefix + Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+        return prefix + value;
+      }
+
+      function runCountUp(el) {
+        if (el._countUpDone) return;
+        el._countUpDone = true;
+        var count = parseFloat(el.getAttribute('data-count'));
+        var format = el.getAttribute('data-format') || 'int';
+        var prefix = el.getAttribute('data-prefix') || '';
+        var decimals = el.hasAttribute('data-decimals');
+        var start = 0;
+        var startTime = null;
+
+        function step(timestamp) {
+          if (!startTime) startTime = timestamp;
+          var elapsed = timestamp - startTime;
+          var progress = Math.min(elapsed / duration, 1);
+          var eased = easing(progress);
+          var current = start + (count - start) * eased;
+          el.textContent = formatCount(current, format, prefix, decimals);
+          if (progress < 1) requestAnimationFrame(step);
+          else el.textContent = formatCount(count, format, prefix, decimals);
+        }
+        requestAnimationFrame(step);
+      }
+
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (!entry.isIntersecting) return;
+          var el = entry.target;
+          el.classList.add('is-visible');
+          if (el.classList.contains('count-up')) runCountUp(el);
+          if (el.id === 'audience-bar') el.classList.add('is-filled');
+        });
+      }, { threshold: 0.2, rootMargin: '0px 0px -40px 0px' });
+
+      document.querySelectorAll('.animate-on-scroll').forEach(function(el) { observer.observe(el); });
+      document.querySelectorAll('.count-up').forEach(function(el) { observer.observe(el); });
+      var bar = document.getElementById('audience-bar');
+      if (bar) observer.observe(bar);
+
+      // Hero visible al cargar
+      setTimeout(function() {
+        document.querySelectorAll('.hero .animate-on-scroll').forEach(function(el) {
+          el.classList.add('is-visible');
+        });
+      }, 100);
+    })();
+  </script>
+
+</body>
+</html>

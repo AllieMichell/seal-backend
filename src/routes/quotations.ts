@@ -1,9 +1,124 @@
 import { Router, Response, Request } from "express";
 import mongoose from "mongoose";
-import { Quotation } from "../models/quotation";
+import fs from "fs/promises";
+import path from "path";
+import { Quotation, IQuotation, IQuotationItem } from "../models/quotation";
 import { authMiddleware, AuthRequest } from "../middleware/auth";
 
 const router = Router();
+
+const TEMPLATES_DIR = path.join(__dirname, "..", "templates");
+const VALID_TEMPLATE_ID_REGEX = /^[a-zA-Z0-9_-]+$/;
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+const RAW_HTML_KEYS = new Set(["itemsHtml"]);
+
+function replaceTemplatePlaceholders(
+  html: string,
+  vars: Record<string, string>
+): string {
+  return html.replace(/\{\{(\w+)\}\}/g, (_, key) => {
+    const value = vars[key];
+    if (value === undefined) return "";
+    return RAW_HTML_KEYS.has(key) ? value : escapeHtml(value);
+  });
+}
+
+function formatMxn(value: number): string {
+  return new Intl.NumberFormat("es-MX", {
+    style: "currency",
+    currency: "MXN",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+function buildItemsHtml(items: IQuotationItem[]): string {
+  return items
+    .map((item) => {
+      const lineTotal =
+        item.quantity * item.unit_price * (1 - (item.discount || 0) / 100);
+      const unitFormatted = formatMxn(item.unit_price);
+      const lineFormatted = formatMxn(lineTotal);
+      const title = escapeHtml(item.name);
+      const desc = escapeHtml(item.description || "");
+      const qty = escapeHtml(String(item.quantity));
+      return `<div class="quote-item">
+        <div class="quote-item__left">
+          <p class="quote-item__title">${title}</p>
+          <p class="quote-item__desc">${desc}</p>
+          <div class="quote-item__detail">
+            <span class="quote-item__qty">${qty} x</span>
+            <span> </span>
+            <span>${unitFormatted}</span>
+          </div>
+        </div>
+        <div class="quote-item__price">${lineFormatted}</div>
+      </div>`;
+    })
+    .join("\n      ");
+}
+
+function formatDateLocale(d: Date | null | undefined): string {
+  if (d == null) return "";
+  const date = d instanceof Date ? d : new Date(d);
+  return date.toLocaleDateString("es-MX", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+function buildTemplateVars(quotation: IQuotation): Record<string, string> {
+  const dateStr = formatDateLocale(quotation.date);
+  const validUntilStr = formatDateLocale(quotation.valid_until ?? null);
+
+  const items = quotation.items || [];
+  const itemsHtml = buildItemsHtml(items);
+
+  const subtotalBeforeDiscount = items.reduce(
+    (sum, item) =>
+      sum +
+      item.quantity * item.unit_price * (1 - (item.discount || 0) / 100),
+    0
+  );
+  const subtotal =
+    subtotalBeforeDiscount * (1 - (quotation.general_discount || 0) / 100);
+  const iva = subtotal * ((quotation.tax_rate || 0) / 100);
+  const total = subtotal + iva;
+  const taxRate = quotation.tax_rate ?? 16;
+
+  return {
+    client: quotation.client,
+    number: quotation.number,
+    date: dateStr,
+    valid_until: validUntilStr,
+    location: quotation.notes ?? "",
+    itemsHtml,
+    subtotal: formatMxn(subtotal),
+    iva: formatMxn(iva),
+    total: formatMxn(total),
+    tax_rate: String(taxRate),
+  };
+}
+
+async function readTemplateHtml(templateId: string): Promise<string> {
+  const filePath = path.join(TEMPLATES_DIR, `${templateId}.html`);
+  const resolvedPath = path.resolve(filePath);
+  const resolvedTemplatesDir = path.resolve(TEMPLATES_DIR);
+  if (!resolvedPath.startsWith(resolvedTemplatesDir) || !VALID_TEMPLATE_ID_REGEX.test(templateId)) {
+    throw new Error("Invalid template ID");
+  }
+  return fs.readFile(filePath, "utf-8");
+}
 
 // GET /api/quotations/public/:id — público, no requiere token
 router.get("/public/:id", async (req: Request, res: Response) => {
@@ -21,6 +136,42 @@ router.get("/public/:id", async (req: Request, res: Response) => {
     res.json(quotation);
   } catch (error) {
     res.status(500).json({ message: "Error fetching quotation", error });
+  }
+});
+
+// GET /api/quotations/public/:id/template — público, devuelve el HTML del template de la cotización
+router.get("/public/:id/template", async (req: Request, res: Response) => {
+  try {
+    const id = typeof req.params.id === "string" ? req.params.id : req.params.id?.[0] ?? "";
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      res.status(400).json({ message: "Invalid quotation ID." });
+      return;
+    }
+    const quotation = await Quotation.findById(id);
+    if (!quotation) {
+      res.status(404).json({ message: "Quotation not found." });
+      return;
+    }
+    const templateId = quotation.template_id?.trim();
+    if (!templateId) {
+      res.status(404).json({ message: "Quotation has no template." });
+      return;
+    }
+    const html = await readTemplateHtml(templateId);
+    const vars = buildTemplateVars(quotation);
+    const filledHtml = replaceTemplatePlaceholders(html, vars);
+    res.setHeader("Content-Type", "text/html");
+    res.send(filledHtml);
+  } catch (error: unknown) {
+    if (error && typeof error === "object" && "code" in error && (error as NodeJS.ErrnoException).code === "ENOENT") {
+      res.status(404).json({ message: "Template not found." });
+      return;
+    }
+    if (error instanceof Error && error.message === "Invalid template ID") {
+      res.status(400).json({ message: "Invalid template ID." });
+      return;
+    }
+    res.status(500).json({ message: "Error reading template", error });
   }
 });
 

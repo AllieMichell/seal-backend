@@ -20,6 +20,7 @@ export interface IQuotation extends Document {
   general_discount: number;
   tax_rate: number;
   notes: string | null;
+  template_id: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -68,6 +69,7 @@ const quotationSchema = new Schema<IQuotation>(
     general_discount: { type: Number, default: 0, min: 0, max: 100 },
     tax_rate: { type: Number, required: true, default: 16, min: 0 },
     notes: { type: String, default: null },
+    template_id: { type: String, default: null },
   },
   {
     timestamps: { createdAt: "created_at", updatedAt: "updated_at" },

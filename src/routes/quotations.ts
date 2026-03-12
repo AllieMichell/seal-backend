@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import fs from "fs/promises";
 import path from "path";
 import { Quotation, IQuotation, IQuotationItem } from "../models/quotation";
+import { Template } from "../models/template";
 import { authMiddleware, AuthRequest } from "../middleware/auth";
 
 const router = Router();
@@ -152,9 +153,19 @@ router.get("/public/:id/template", async (req: Request, res: Response) => {
       res.status(404).json({ message: "Quotation not found." });
       return;
     }
-    const templateId = quotation.template_id?.trim();
+    let templateId = quotation.template_id?.trim();
+
     if (!templateId) {
-      res.status(404).json({ message: "Quotation has no template." });
+      const orgTemplate = await Template.findOne({
+        organization_id: quotation.organization_id,
+      });
+      if (orgTemplate) {
+        templateId = orgTemplate._id.toString();
+      }
+    }
+
+    if (!templateId) {
+      res.status(404).json({ message: "No template found." });
       return;
     }
     const html = await readTemplateHtml(templateId);
